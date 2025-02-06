@@ -69,4 +69,4 @@ stages:
             azureSubscription: '764e36cc-682d-4c25-86fe-22a99b2d5426'  # Replace with the name of your Azure service connection
             appType: 'webApp'
             WebAppName: 'student-db-app'  # Replace with the name of your Web API app in Azure
-            packageForLinux: '$(Build.ArtifactStagingDirectory)/webapi.zip'  # Path to the .zip file
+            packageForLinux: '$(Build.ArtifactStagingDirectory)/webapi.zip'  # Path to the .zip filee
