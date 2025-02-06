@@ -1,19 +1,72 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
-- main
+  branches:
+    include:
+      - main
+      - story/*  # Adjust based on your branch name (e.g., main, master, etc.)
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'windows-latest'  # Using a hosted Windows agent
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+variables:
+  solution: '**/*.sln'
+  buildConfiguration: 'Release'
+  buildPlatform: 'Any CPU'
+  artifactName: 'TestBuild'  # Name for your build artifact
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+stages:
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+    - job: BuildJob
+      displayName: 'Build ASP.NET Web API Project'
+      steps:
+        - task: NuGetToolInstaller@1
+          displayName: 'Install NuGet'
+        
+        - task: NuGetCommand@2
+          displayName: 'Restore NuGet Packages'
+          inputs:
+            restoreSolution: '$(solution)'
+
+        - task: VSBuild@1
+          displayName: 'Build Solution'
+          inputs:
+            solution: '$(solution)'
+            platform: '$(buildPlatform)'
+            configuration: '$(buildConfiguration)'
+
+        - task: VSTest@2
+          displayName: 'Run Unit Tests'
+          inputs:
+            platform: '$(buildPlatform)'
+            configuration: '$(buildConfiguration)'
+
+        - task: ArchiveFiles@2
+          displayName: 'Create .zip Archive'
+          inputs:
+            rootFolderOrFile: '$(Build.SourcesDirectory)'
+            includeRootFolder: false
+            archiveType: 'zip'
+            archiveFile: '$(Build.ArtifactStagingDirectory)/webapi.zip'
+            replaceExistingArchive: true
+
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish Artifacts'
+          inputs:
+            pathToPublish: '$(Build.ArtifactStagingDirectory)'
+            artifactName: $(artifactName)
+            publishLocation: 'Container'
+
+- stage: Deploy
+  displayName: 'Deploy Stage'
+  jobs:
+    - job: DeployJob
+      displayName: 'Deploy Web API to Azure'
+      steps:
+        - task: AzureRmWebAppDeployment@4
+          displayName: 'Deploy to Azure Web App'
+          inputs:
+            azureSubscription: '764e36cc-682d-4c25-86fe-22a99b2d5426'  # Replace with the name of your Azure service connection
+            appType: 'webApp'
+            WebAppName: 'student-db-app'  # Replace with the name of your Web API app in Azure
+            packageForLinux: '$(Build.ArtifactStagingDirectory)/webapi.zip'  # Path to the .zip file
