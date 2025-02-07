@@ -26,13 +26,13 @@ jobs:
           dotnet-version: '9.x'
 
       - name: Restore dependencies
-        run: dotnet restore Student DB Application/Student-DB-Managment-app/Student-DB-Managment-app.csproj
+        run: dotnet restore Student DB "Application/Student-DB-Managment-app/Student-DB-Managment-app.csproj"
 
       - name: Build with dotnet
-        run: dotnet build Student DB Application/Student-DB-Managment-app/Student-DB-Managment-app.csproj --configuration Release --no-restore
+        run: dotnet build Student DB "Application/Student-DB-Managment-app/Student-DB-Managment-app.csproj" --configuration Release --no-restore
 
       - name: dotnet publish
-        run: dotnet publish Student DB Application/Student-DB-Managment-app/Student-DB-Managment-app.csproj -c Release -o "${{ github.workspace }}/publish"
+        run: dotnet publish Student DB "Application/Student-DB-Managment-app/Student-DB-Managment-app.csproj" -c Release -o "${{ github.workspace }}/publish"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
