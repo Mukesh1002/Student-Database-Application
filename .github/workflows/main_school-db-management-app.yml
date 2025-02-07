@@ -1,6 +1,6 @@
 # GitHub Actions workflow for deploying an ASP.NET Core app to Azure Web App
 
-name: Build and deploy ASP.Net Core app to Azure Web App - School-DB-Management-App
+name: Build and Deploy ASP.NET Core App to Azure Web App - School-DB-Management-App
 
 on:
   push:
@@ -31,8 +31,8 @@ jobs:
       - name: Build with dotnet
         run: dotnet build "Student DB Application/Student-DB-Managment-app/Student-DB-Managment-app.csproj" --configuration Release --no-restore
 
-      - name: dotnet publish
-        run: dotnet publish "Student DB Application/Student-DB-Managment-app/Student-DB-Managment-app.csproj" -c Release -o "${{ github.workspace }}/publish"
+      - name: Publish application
+        run: dotnet publish "Student DB Application/Student-DB-Managment-app/Student-DB-Managment-app.csproj" --configuration Release --output "${{ github.workspace }}/publish"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -56,13 +56,21 @@ jobs:
         with:
           name: .net-app
           path: ${{ github.workspace }}/publish
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_5A39D27691D54F7E8054809443355B12 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DBBF86CC69F14F568F97109528F5427B }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D00AB37B81E2428AA8A857F1E4978438 }}
+
+      - name: Restart Azure Web App (Prevent Locked Files)
+        run: |
+          az webapp restart --name School-DB-Management-App --resource-group YourResourceGroup
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZUREAPPSERVICE_CLIENTID_5A39D27691D54F7E8054809443355B12 }}
+          AZURE_TENANT_ID: ${{ secrets.AZUREAPPSERVICE_TENANTID_DBBF86CC69F14F568F97109528F5427B }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D00AB37B81E2428AA8A857F1E4978438 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
